@@ -1,3 +1,8 @@
+import {
+  budgetOptions,
+  projectTypeOptions,
+  timeframeOptions,
+} from '@/data/enquiry-options'
 import { site } from '@/data/site'
 import type { EnquiryPayload, EnquiryResult } from '@/types'
 
@@ -76,17 +81,37 @@ export async function submitEnquiry(
  * the fallback on the confirmation screen and when submission fails, so an
  * enquiry is never lost.
  */
+/** Turns a stored option value ('5k-15k') back into its label ('£5,000 – £15,000'). */
+function labelFor(
+  options: { value: string; label: string }[],
+  value: string,
+): string {
+  return options.find((option) => option.value === value)?.label ?? value
+}
+
 export function buildMailtoHref(payload: EnquiryPayload): string {
+  // Only the answered optional questions appear.
+  const optional = [
+    payload.budget ? `Budget: ${labelFor(budgetOptions, payload.budget)}` : null,
+    payload.timeframe
+      ? `Timeframe: ${labelFor(timeframeOptions, payload.timeframe)}`
+      : null,
+  ].filter((line): line is string => line !== null)
+
+  // Not filtered — the empty string is the blank line before the description.
   const lines = [
     `Name: ${payload.name}`,
     `Email: ${payload.email}`,
     `Needs: ${payload.headline}`,
-    `Project type: ${payload.projectType || 'Not specified'}`,
-    payload.budget ? `Budget: ${payload.budget}` : null,
-    payload.timeframe ? `Timeframe: ${payload.timeframe}` : null,
+    `Project type: ${
+      payload.projectType
+        ? labelFor(projectTypeOptions, payload.projectType)
+        : 'Not specified'
+    }`,
+    ...optional,
     '',
     payload.description,
-  ].filter(Boolean)
+  ]
 
   const subject = encodeURIComponent(
     `Project enquiry — ${payload.headline || 'New project'}`,
