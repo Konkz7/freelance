@@ -101,22 +101,51 @@ two-column layout at the top of the section.
 There is no backend. Submission is isolated in one function:
 **`src/lib/enquiry.ts`**.
 
-Out of the box the form runs in **preview mode**: it validates properly, shows
-the real success state, logs the payload to the console, and offers a
-pre-filled `mailto:` link so an enquiry is never lost.
+**It works as shipped.** With no endpoint configured, a valid submit opens the
+visitor's email client with every answer pre-filled — subject, name, contact
+address, project type, budget, timeframe and description — addressed to you.
+The confirmation screen explains that they still need to press send, and
+repeats the link in case nothing opened.
 
-To send for real, create `.env.local` (see `.env.example`):
+That means no enquiry is lost, but it does depend on the visitor having a mail
+client. To receive submissions in the background instead, point it at a form
+provider.
+
+**Locally** — create `.env.local` (see `.env.example`):
 
 ```bash
 VITE_ENQUIRY_ENDPOINT=https://formspree.io/f/xxxxxxxx
 ```
 
-Any provider that accepts a JSON `POST` works — Formspree, Web3Forms, Getform,
-Basin, Netlify Forms, or your own serverless function. Restart the dev server
-after adding it. If you need a different shape of request, `submitEnquiry()` is
-the only place to change.
+**In production** — add a repository variable rather than committing the URL:
+
+```bash
+gh variable set VITE_ENQUIRY_ENDPOINT --repo Konkz7/freelance --body "https://formspree.io/f/xxxxxxxx"
+```
+
+The deploy workflow already reads it. Push anything (or re-run the workflow)
+and the form switches to a background POST with no code change; the mailto path
+stays as the fallback if the request fails.
+
+Any provider accepting a JSON `POST` works — Formspree, Web3Forms, Getform,
+Basin. If you need a different request shape, `submitEnquiry()` is the only
+place to change.
 
 Validation rules live in `src/lib/validate-enquiry.ts`.
+
+---
+
+## Deployment
+
+Pushing to `main` builds and publishes to GitHub Pages via
+`.github/workflows/deploy.yml`. Live at
+**https://konkz7.github.io/freelance/**.
+
+Because Pages serves the site from a subdirectory, `vite.config.ts` sets
+`base: '/freelance/'`. Absolute paths written in TypeScript are *not* rewritten
+by Vite, so every `public/` path goes through `asset()` in `src/lib/asset.ts`.
+**If you rename the repo or move to a custom domain, change `base` — and
+`site.url` plus the URLs in `index.html`.**
 
 ---
 

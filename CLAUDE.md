@@ -28,8 +28,15 @@ React · TypeScript · Vite · Tailwind CSS v4 · shadcn/ui · Lucide React ·
 Framer Motion.
 
 - **There is intentionally no backend.** Do not add a database, server or API
-  for this site. The enquiry form posts to an external provider via
-  `src/lib/enquiry.ts` and nothing else.
+  for this site. All submission logic lives in `src/lib/enquiry.ts`: with
+  `VITE_ENQUIRY_ENDPOINT` set it POSTs to a form provider, and without it hands
+  off to a pre-filled `mailto:`. Both paths must keep working — the site is
+  deployed statically and the mailto fallback is what makes the form functional
+  with no provider configured.
+- **Deployed to GitHub Pages under `/freelance/`.** `vite.config.ts` sets
+  `base`, and every `public/` path referenced from TypeScript must go through
+  `asset()` in `src/lib/asset.ts` — Vite does not rewrite absolute paths in TS,
+  so a bare `/projects/x.svg` 404s in production.
 - **Do not add libraries without a clear need.** Form validation is hand-rolled
   in `src/lib/validate-enquiry.ts` on purpose — no react-hook-form, no zod.
 - Keep the architecture simple and maintainable.
