@@ -10,7 +10,7 @@ import type { NavItem, SiteConfig } from '@/types'
  * ======================================================================== */
 
 export const site: SiteConfig = {
-  name: 'Amara Okonkwo',
+  name: 'O-Place',
   role: 'Independent software developer',
   location: 'London, UK',
 
